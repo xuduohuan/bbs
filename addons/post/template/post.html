@@ -1,0 +1,312 @@
+{template 'common/header'}
+<ul class="nav nav-tabs">
+	<li  {if $op == 'display'}class="active"{/if}><a href="{php echo $this->createWebUrl('post', array('op' => 'display'))}">管理</a></li>
+	<li  {if $op == 'post'}class="active"{/if}><a href="{php echo $this->createWebUrl('post', array('op' => 'post'))}">添加</a></li>
+</ul>
+{if $op=='display'}
+<div class="panel panel-info">
+	<div class="panel-heading">筛选</div>
+	<div class="panel-body">
+		<form id="form_search" action="" method="post" class="form-horizontal" role="form">
+			<div class="form-group">
+				<label class="col-md-2 col-lg-1 control-label">帖子内容</label>
+				<div class="col-md-2 col-lg-2">
+					<input class="form-control" name="title" type="text" value="{$title}" placeholder="内容关键字">
+				</div>
+				<label class="col-md-2 col-lg-1 control-label">所属页面</label>
+				<div class="col-md-2 col-lg-2">
+					<select class="form-control" style="margin-right:15px;" name="se" id="se">
+						{loop $s1 $row1}
+						<option value="{$row1['id']}" {if $info['sex']==$row['id']}selected{/if}>{$row1['title']}</option>
+						{/loop}
+					</select>
+				</div>
+				<label class="col-md-2 col-lg-1 control-label">发帖用户</label>
+				<div class="col-md-2 col-lg-2">
+					<input class="form-control" name="name" type="text" value="{$name}" placeholder="用户姓名">
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-md-offset-2 col-lg-offset-1 col-md-2 col-lg-1">
+					<button id="btn_search" type="submit" class="btn btn-success"><i class="fa fa-search"></i> 搜索</button>
+					<input type="hidden" name="token" value="{$_W['token']}" />
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+<div class="main">
+	<div class="clear" style="margin-bottom:10px;"></div>
+	<div class="panel panel-default">
+		<div class="panel-heading">帖子列表【帖子数量：{$post_num}】</div>
+		<div class="panel-body table-responsive">
+			<table class="table table-hover">
+				<tbirthdayad class="navbar-inner">
+					<tr>
+						<th style="width:5px;">序号</th>
+						<th style="width:20px;">所属板块</th>
+						<th style="width:20px;">所属话题</th>
+						<th style="width:10px;">发帖用户</th>
+						<th style="width:50px;">帖子内容</th>
+						<th style="width:10px;">浏览量</th>
+						<th style="width:20px;">是否显示</th>
+						<th style="width:30px;">发帖时间</th>
+						<th style="width:90px;">操作</th>
+					</tr>
+				</tbirthdayad>
+				<tbody>
+				{loop $list $k $item}
+				<tr>
+					<td>{php echo $k+1}</td>
+					<td>{$item['st']}</td>
+					<td>{$item['tt']}</td>
+					<td>{$item['nickname']}</td>
+					<td>{$item['content']}</td>
+					<td>{$item['click']}</td>
+					<td>{if $item['status'] =='0'}显示{else}不显示{/if}</td>
+					<td>{php echo date('Y-m-d H:i',$item['time'])}</td>
+					<td>
+						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('post',array('op'=>'post', 'id'=>$item['id']))}"><i class="fa fa-edit"></i> 详情编辑</a>
+						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('post',array('op'=>'see', 'id'=>$item['id']))}"><i class="fa fa-bar-chart"></i> 查看用户关注</a>
+						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('post',array('op'=>'delete', 'id'=>$item['id']))}" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
+					</td>
+				</tr>
+				{/loop}
+				</tbody>
+				<input name="token" type="hidden" value="{$_W['token']}" />
+			</table>
+		</div>
+	</div>
+	{$pager}
+</div>
+{elseif $op=='post'}
+<div class="main">
+	<form action="{php echo $this->createWebUrl('article',array('op'=>'post'))}" class="form-horizontal" method="post" enctype="multipart/form-data" >
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<div class="form-group">
+					<label class="col-md-2 col-lg-1 control-label">所属板块</label>
+					<div class="col-md-2 col-lg-1">
+						<select class="form-control" style="margin-right:15px;" name="se" id="se">
+							{loop $s1 $row1}
+							<option value="{$row1['id']}" {if $info['sex']==$row['id']}selected{/if}>{$row1['title']}</option>
+							{/loop}
+						</select>
+					</div>
+					<label class="col-md-2 col-lg-1 control-label">所属话题</label>
+					<div class="col-md-2 col-lg-1">
+						<select class="form-control" style="margin-right:15px;" name="to" id="to">
+							{loop $s2 $row1}
+							<option value="{$row1['id']}" {if $info['sex']==$row['id']}selected{/if}>{$row1['title']}</option>
+							{/loop}
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-md-2 col-lg-1 control-label">帖子内容</label>
+					<div class="col-md-2 col-lg-7">
+						<input type="text" name="content" id="content"  class="form-control" value="{$info['content']}">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-md-2 col-lg-1 control-label">是否显示</label>
+					<div class="col-md-2 col-lg-1">
+						<select class="form-control" style="margin-right:15px;" name="status">
+							<option value="0" {if $info['status']=='0'}selected{/if}>显示</option>
+							<option value="1" {if $info['status']=='1'}selected{/if}>不显示</option>
+						</select>
+					</div>
+				</div>
+				<div class='form-group text-center'>
+					<input class="btn btn-primary" type="submit" name="sub">
+					<input type="hidden" name="id" value="{$id}" />
+					<input type="hidden" name="token" value="{$_W['token']}" />
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+{elseif $op=='see'}
+<div class="main">
+	<div class="panel panel-info">
+		<div class="panel-heading topop">收藏记录</div>
+		<div class="panel-body ele">
+			<div class="panel-body table-responsive">
+				<table class="table table-hover">
+					<tbirthdayad class="navbar-inner">
+						<tr>
+							<th style="width:5px;">序号</th>
+							<th style="width:20px;">用户昵称</th>
+							<th style="width:20px;">用户头像</th>
+							<th style="width:20px;">收藏时间</th>
+							<th style="width:50px;">操作</th>
+						</tr>
+					</tbirthdayad>
+					<tbody>
+					{loop $coll $k $item}
+					<tr>
+						<td>{php echo $k+1}</td>
+						<td>{$item['nickname']}</td>
+						<td>{$item['avatar']}</td>
+						<td>{php echo date('Y-m-d H:i',$item['time'])}</td>
+						<td>
+							<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('article',array('op'=>'see_del','wi'=>'coll','id'=>$item['id']))}" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
+						</td>
+					</tr>
+					{/loop}
+					</tbody>
+					<input name="token" type="hidden" value="{$_W['token']}" />
+				</table>
+			</div>
+			{$pager}
+		</div>
+	</div>
+
+	<div class="panel panel-danger">
+		<div class="panel-heading topop">点赞记录</div>
+		<div class="panel-body ele">
+			<div class="panel-body table-responsive">
+				<table class="table table-hover">
+					<tbirthdayad class="navbar-inner">
+						<tr>
+							<th style="width:5px;">序号</th>
+							<th style="width:20px;">用户昵称</th>
+							<th style="width:20px;">用户头像</th>
+							<th style="width:20px;">点赞时间</th>
+							<th style="width:50px;">操作</th>
+						</tr>
+					</tbirthdayad>
+					<tbody>
+					{loop $zan $k $item}
+					<tr>
+						<td>{php echo $k+1}</td>
+						<td>{$item['nickname']}</td>
+						<td>{$item['avatar']}</td>
+						<td>{php echo date('Y-m-d H:i',$item['time'])}</td>
+						<td>
+							<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('article',array('op'=>'see_del','wi'=>'zan','id'=>$item['id']))}" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
+						</td>
+					</tr>
+					{/loop}
+					</tbody>
+					<input name="token" type="hidden" value="{$_W['token']}" />
+				</table>
+			</div>
+			{$pager_z}
+		</div>
+	</div>
+
+	<div class="panel panel-success">
+		<div class="panel-heading topop">评论记录</div>
+		<div class="panel-body ele">
+			<div class="panel-body table-responsive">
+				<table class="table table-hover">
+					<tbirthdayad class="navbar-inner">
+						<tr>
+							<th style="width:5px;">序号</th>
+							<th style="width:20px;">用户昵称</th>
+							<th style="width:20px;">用户头像</th>
+							<th style="width:60px;">评论</th>
+							<th style="width:20px;">点赞时间</th>
+							<th style="width:50px;">操作</th>
+						</tr>
+					</tbirthdayad>
+					<tbody>
+					{loop $com $k $item}
+					<tr>
+						<td>{php echo $k+1}</td>
+						<td>{$item['nickname']}</td>
+						<td>{$item['avatar']}</td>
+						<td>{$item['content']}</td>
+						<td>{php echo date('Y-m-d H:i',$item['time'])}</td>
+						<td>
+							<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('article',array('op'=>'see_del','wi'=>'com','id'=>$item['id']))}" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
+						</td>
+					</tr>
+					{/loop}
+					</tbody>
+					<input name="token" type="hidden" value="{$_W['token']}" />
+				</table>
+			</div>
+			{$pager_m}
+		</div>
+	</div>
+
+	<div class="panel panel-warning topop">
+		<div class="panel-heading topop">打赏记录</div>
+		<div class="panel-body ele">
+
+		</div>
+	</div>
+</div>
+{/if}
+<script>
+
+    //    var level={php echo json_encode($group)};
+    //    if($("select[name='se']").val()){
+    //        setlevel(parseInt($("select[name='se']").val()-1));
+    //    }
+    //    $("select[name='se']").change(function(){
+    //        setlevel(parseInt($(this).val()-1));
+    //    })
+    //    function setlevel(i){
+    //        var h = "";
+    //        $.each(level_arr[i],function(k,v){
+    //            h += '<option value="'+v.id+'">'+v.name+'</option>';
+    //        })
+    //        $("select[name='to']").html(h);
+    //    }
+
+
+    $(".topop").click(function(){
+        $(this).next(".ele").slideToggle()
+    })
+
+    $("#btn_search").click(function(){
+        var title = $("input[name='title']").val();
+        var name = $("input[name='name']").val();
+        var str = '';
+        if(title){
+            str += "&title="+encodeURI(title);
+        }
+        if(name){
+            str += "&name="+encodeURI(name);
+        }
+
+        $("#form_search").attr("action", "{php echo $this->createWebUrl('post',array('op'=>'display'))}"+str);
+    });
+
+    function drop_confirm(msg, url) {
+        if (confirm(msg)) {
+            window.location = url;
+        }
+    }
+</script>
+
+{template 'common/footer'}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

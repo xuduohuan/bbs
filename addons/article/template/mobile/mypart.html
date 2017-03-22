@@ -1,0 +1,77 @@
+{template 'common/app_header'}
+<body>
+    <div class="content">
+        <div class="searchbar flex bg_white margin_b_10 padding_h_15" style="padding-top:10px;">
+            <div class="light" style="width:20px;"><i class="iconfont icon-left"></i></div>
+            <div class="all_width text_center font_16">我参与的</div>
+        </div>
+        <div>
+            <ul class="list"></ul>
+        </div>
+    </div>
+    <div class="absolute all text_center bg_white award_page hide">
+        <div class="award_bg"></div>
+        <div class="font_18 award_word">谢谢各位的赞赏</div>
+        <div class="flex flex_wrap lineheight_3 light_red award_block">
+            <div class="border_red col_3 circle_5">1分</div>
+            <div class="border_red col_3 circle_5">5分</div>
+            <div class="border_red col_3 circle_5">10分</div>
+            <div class="border_red col_3 circle_5">20分</div>
+            <div class="border_red col_3 circle_5">30分</div>
+            <div class="border_red col_3 circle_5">100分</div>
+        </div>
+        <div class="font_18 light_blue">其他金额</div>
+    <div>
+    <script type="text/template" charset="utf-8" id='list_template'>
+        {{for(var i=0;i<it.length;i++){ }}
+            <li class="list_item">
+                <div class="flex margin_b_10">
+                    <div class="media_img relative">
+                        <img src="{{=it[i].headimg}}"/>
+                        {{ if(it[i].ismsg){ }}
+                        <div class="absolute block_16 bg_red circle" style="right:-7px;top:-7px"></div>
+                        {{ } }}
+                    </div>
+                    <div class="all_width block padding_l_10">
+                        <div class="list_title dark_blue">{{=it[i].name}} <span class="label label_blue font_12 circle_10">{{=it[i].label}}</span></div>
+                        <div class="font_12 light">发表于{{=it[i].time}}前&emsp;浏览 {{=it[i].skin_num}}</div>
+                    </div>
+                </div>
+                <div class="flex v_center bg_grey margin_b_10" style="min-height:84px">
+                    {{ if(it[i].postimg){ }}
+                    <div class="media_img" style="width:200px;">
+                        <img src="{{=it[i].postimg}}"/>
+                    </div>
+                    {{ } }}
+                    <div class="all_width line_ellipsis padding_h_15" style="height:42px;">{{=it[i].posttext}}</div>
+                </div>
+                <div class="flex h_justify font_12">
+                    <div class=""><i class="iconfont icon-good-copy dark_blue"></i> 点赞：{{=it[i].laud_num}}</div>
+                    <div class="icon_award"><i class="iconfont icon-dollar dark_blue"></i> 打赏：{{=it[i].award_num}}</div>
+                    <div class=""><i class="iconfont icon-conment1 dark_blue"></i> 评论：{{=it[i].comment}}</div>
+                </div>
+            </li>
+        {{ } }}
+    </script>
+    <script type="text/javascript">
+        // 帖子列表模版
+        var evalList = doT.template($("#list_template").text());
+        var list=[{id:1,headimg:"{$_W['attachurl']}image/demo1.png",name:"迟勇军",label:"用户标签",time:"1小时",skin_num:2,ismsg:true,posttext:"如果谈及中国在技术领域的短板，那么大家可能想到的是发动机，其实还有一样：高级电子芯片！人们通常所说的CPU，所谓CPU即中央处理器，就是其代表产品，它可是为电子信息产品的心脏",laud_num:2,award_num:10,comment:10},{id:2,headimg:"{$_W['attachurl']}image/demo1.png",name:"迟勇军",label:"用户标签",time:"1小时",skin_num:2,ismsg:true,postimg:"{$_W['attachurl']}image/demo.jpg",posttext:"如果谈及中国在技术领域的短板，那么大家可能想到的是发动机，其实还有一样：高级电子芯片！人们通常所说的CPU，所谓CPU即中央处理器，就是其代表产品，它可是为电子信息产品的心脏",laud_num:2,award_num:10,comment:10},{id:3,headimg:"{$_W['attachurl']}image/demo1.png",name:"迟勇军",label:"用户标签",time:"1小时",skin_num:2,ismsg:false,postimg:"{$_W['attachurl']}image/demo.jpg",posttext:"如果谈及中国在技术领域的短板，那么大家可能想到的是发动机，其实还有一样：高级电子芯片！人们通常所说的CPU，所谓CPU即中央处理器，就是其代表产品，它可是为电子信息产品的心脏",laud_num:2,award_num:10,comment:10}];
+        $(".list").html(evalList(list));
+        // 赞赏
+        $(".icon_award").click(function(){
+            $("body").scrollTop(0).addClass("row");
+            $('.award_page').show()
+        })
+        $(".border_red").click(function(){
+            $(".border_red").removeClass("cur")
+            $(this).addClass("cur")
+            $("body").removeClass("row");
+            $('.award_page').fadeOut()
+        })
+        $('.award_page').on('touchmove', function(event) {
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>

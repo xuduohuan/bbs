@@ -1,0 +1,23 @@
+备注：如果有图片，在图片变量前加上{$_W['attachurl']}
+
+
+文章列表页
+变量名：$arr_json
+
+首页
+公告$notice_json
+帖子$post_json
+文章$arc_json
+
+add:自定义按钮 $diybutton_json
+add:图片 $pics_json
+11111111
+
+文章详情
+文章信息 $info_json
+相关阅读 $magnet_json
+评论信息 $com_json
+
+帖子详情
+add:帖子信息 $info_json
+add:评论信息 $com_json

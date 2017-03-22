@@ -1,0 +1,80 @@
+{template 'common/header'}
+<style type="text/css">
+    .heading_title{
+        cursor: pointer;
+    }
+    .heading_title + .heading_title{
+        margin-left: 50px;
+    }
+    .heading_title.cur{
+        color: #2a6496;
+    }
+    .panel_con{
+        min-height: 550px;
+    }
+    .introduce,.honner,.connect,.pictures{
+        display: none;
+    }
+</style>
+<ul class="nav nav-tabs">
+    <li class="active"><a href="">关于我们</a></li>
+</ul>
+<div class="main">
+    <div class="panel panel-default" style="margin-top:15px;">
+        <div class="panel-heading">幻灯片管理</div>
+        <form action="" class="form-horizontal form" method="post" enctype="multipart/form-data" >
+            <div class='panel-body'>
+                {php echo tpl_form_field_multi_image('pics',unserialize($ppic['pic']));}
+            </div>
+            <div class='form-group text-center'>
+                <input name="submit_pic" type="submit" value="提交" class="btn btn-primary span3">
+                <input type="hidden" name="token" value="{$_W['token']}" />
+            </div>
+        </form>
+    </div>
+    <div class="panel panel-default" style="margin-top:15px;">
+        <div class="panel-heading">
+            <span class="heading_title cur" for="about">关于我们</span>
+            <span class="heading_title" for="introduce">公司简介</span>
+            <span class="heading_title" for="honner">公司荣誉</span>
+            <span class="heading_title" for="connect">联系我们</span>
+        </div>
+        <form action="" method="post" class="form-horizontal form" enctype="multipart/form-data">
+            <div class='panel-body panel_con about'>
+                <textarea style="height:600px;" class="form-control" name="about_us" id="about" cols="70">{$as['aboutus']}</textarea>
+            </div>
+            <div class='panel-body panel_con introduce'>
+                <textarea style="height:600px;" class="form-control" name="profile" id="introduce" cols="70">{$as['profile']}</textarea>
+            </div>
+            <div class='panel-body panel_con honner'>
+                <textarea style="height:600px;" class="form-control" name="honor" id="honner" cols="70">{$as['honor']}</textarea>
+            </div>
+            <div class='panel-body panel_con connect'>
+                <textarea style="height:600px;" class="form-control" name="contact" id="connect" cols="70">{$as['contact']}</textarea>
+            </div>
+            <div class='form-group text-center'>
+                <input name="submit" type="submit" value="提交" class="btn btn-primary span3">
+                <input type="hidden" name="id" value="{$as['id']}" />
+                <input type="hidden" name="token" value="{$_W['token']}" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    require(['jquery','util'], function($, util){
+        $(function(){
+            util.editor($('#about')[0]);
+            util.editor($('#introduce')[0]);
+            util.editor($('#honner')[0]);
+            util.editor($('#connect')[0]);
+        });
+    });
+    $(".heading_title").click(function(){
+        $(".heading_title").removeClass("cur");
+        $(this).addClass("cur");
+        $(".panel_con").hide();
+        $("."+$(this).attr("for")).show();
+    })
+</script>
+{template 'common/footer'}

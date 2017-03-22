@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://www.hopesfire.com" versionCode="0.6">
+<application setting="false">
+    <name><![CDATA[论坛模块帖子组]]></name>
+    <identifie><![CDATA[post]]></identifie>
+    <version><![CDATA[1.0.0]]></version>
+    <type><![CDATA[business]]></type>
+    <ability><![CDATA[论坛模块帖子组]]></ability>
+    <description><![CDATA[论坛模块帖子组]]></description>
+    <author><![CDATA[huan]]></author>
+    <url><![CDATA[]]></url>
+</application>
+<platform>
+    <handles>
+        <message type="text" />
+    </handles>
+    <rule embed="true" />
+</platform>
+<bindings>
+  <cover>
+
+    </cover>
+    <menu>
+
+    </menu>
+</bindings>
+<install>
+  <![CDATA[
+
+    ]]>
+</install>
+<uninstall>
+    <![CDATA[
+
+    ]]>
+</uninstall>
+</manifest>

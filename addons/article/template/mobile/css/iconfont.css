@@ -1,0 +1,59 @@
+
+@font-face {font-family: "iconfont";
+  src: url('../fonts/iconfont.woff?t=1490076960278') format('woff'), /* chrome, firefox */
+  url('../fonts/iconfont.ttf?t=1490076960278') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+  url('../fonts/iconfont.svg?t=1490076960278#iconfont') format('svg'); /* iOS 4.1- */
+}
+
+.iconfont {
+    display: inline-block;
+    font-family:"iconfont" !important;
+    font-style:normal;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    vertical-align: middle;
+}
+
+.icon-paixu:before { content: "\e643"; }
+
+.icon-comiispaixu:before { content: "\e654"; }
+
+.icon-tupian1:before { content: "\e6ac"; }
+
+.icon-biaoqing:before { content: "\e61c"; }
+
+.icon-yuyin:before { content: "\e61e"; }
+
+.icon-left:before { content: "\e675"; }
+
+.icon-right:before { content: "\e677"; }
+
+.icon-conment:before { content: "\e602"; }
+
+.icon-good-copy:before { content: "\e604"; }
+
+.icon-addconment:before { content: "\e605"; }
+
+.icon-dollar:before { content: "\e608"; }
+
+.icon-credit-copy:before { content: "\e60a"; }
+
+.icon-user:before { content: "\e60e"; }
+
+.icon-home:before { content: "\e610"; }
+
+.icon-post:before { content: "\e611"; }
+
+.icon-volume:before { content: "\e612"; }
+
+.icon-conment1:before { content: "\e613"; }
+
+.icon-share:before { content: "\e614"; }
+
+.icon-eye:before { content: "\e615"; }
+
+.icon-list1:before { content: "\e616"; }
+
+.icon-rmb1:before { content: "\e618"; }
+
