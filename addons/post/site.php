@@ -3,6 +3,178 @@
 include 'plugin/common.func.php';
 
 defined('IN_IA') or exit('Access Denied');
+    //根据openid获取用户微信基本信息
+    public function user_info($openid){
+        global $_W;
+        if(!isset($openid)){
+            $openid = $_W['fans']['from_user'];
+        }
+        $acc = WeAccount::create($this->acid);
+        $access_token = $acc->getAccessToken();
+        $url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=$access_token&openid=$openid&lang=zh_CN";
+        $output = http_request($url);
+        if($output){
+            $nickname=json_decode($output)->nickname;
+            $avatar=json_decode($output)->headimgurl;
+            return [$nickname,$avatar];
+        }
+    }
+
+
+
+
+
+    //返回json格式化数据
+    public static function returnMsg($responce=array())
+    {
+        echo json_encode($responce);
+    }
+
+
+    //取出用户信息
+    public function getUserInfo($openid='',$uid=0)
+    {
+        global $_GPC,$_W;
+
+        if($openid){
+            return $userinfo = pdo_fetch('select * from '.tablename('forum_user').' where openid=:openid',[':openid'=>$_W['openid']]);   
+        }else if($id){
+            return $userinfo = pdo_fetch('select * from '.tablename('forum_user').' where id=:id',[':id'=>$id]);
+        }
+        return false;
+
+    }
+
+
+    //点赞
+    public function doMobileZan()
+    {
+        global $_GPC,$_W;
+
+        $uid = getUserInfo();
+        $postid = $_GPC['postid'];
+        $type = intval($_GPC['type']);      //打赏类型  2帖子1文章
+        
+        if($type && !in_array($type, [1,2])){
+            self::returnMsg(['msg'=>'参数错误','status'=>1]);
+        }
+
+        $data = ['weid'=>$_W['weid'],'uid'=>$uid['id'],'type'=>$type,'cid'=>$postid,'time'=>time()];
+        
+        $ise = pdo_fetch('select 1 from '.tablename('forum_zan').' where uid=:uid and cid=:cid and type=:type',[':uid'=>$uid['uid'],'cid'=>$postid,':type'=>$type]);
+        if($ise){
+            pdo_insert('forum_zan',$data);
+            echo json_decode(['msg'=>'点赞成功','status'=>0]);
+        }else{
+            echo json_decode(['msg'=>'已经赞过','status'=>1]);
+        }  
+    }
+
+
+    //打赏
+    public function doMobileShang()
+    {
+        global $_GPC,$_W;
+
+        $uid = getUserInfo();
+        $postid = $_GPC['postid'];
+        $rid = intval($_GPC['rid']);
+        $score = intval($_GPC['score']);
+        $type = intval($_GPC['type']);      //打赏类型  2帖子1文章
+        if($type && !in_array($type, [1,2])){
+            self::returnMsg(['msg'=>'参数错误','status'=>1]);
+        }
+
+        if($_W['ispost'] && !empty($score) && !empty($rid)){
+            elf::returnMsg(['msg'=>'参数错误','status'=>1]);
+        }
+
+        $data = ['weid'=>$_W['weid'],'uid'=>$uid['id'],'type'=>2,'cid'=>$postid,'time'=>time()];
+        if($_GPC['rid']){       //档位
+            $data['rid'] = intval($_GPC['rid']);
+            $score = pdo_fetch('select score from '.tablename('forum_reward_set').' where id=:rid and status=0',[':rid'=>intval($_GPC['rid'])]);
+            $data['score'] = $score['score'];
+        }else{      //自定义
+            $data['score'] = $score;
+        }
+
+        //减少用户对应积分
+        $sql = 'update '.tablename('forum_user').' set score=score-:score where uid=:uid and weid=:weid';
+        pdo_query($sql,[':score'=>$score,':uid'=>$uid['id'],':weid'=>$_W['weid']]);
+        $isok = pdo_insert('forum_reward',$data);       //打赏记录
+        $rewardid = pdo_insertid();
+        if($isok){      //插入用户积分记录
+            $data = ['weid'=>$weid,'uid'=>$uid['id'],'type'=>$type,'record_id'=>$rewardid,'time'=>time()];
+            $isok = pdo_insert('forum_behavior',$rewardid);
+        }
+
+        if($isok){
+            self::returnMsg(['msg'=>'打赏成功','status'=>0]);
+        }else{
+            self::returnMsg(['msg'=>'打赏失败','status'=>1]);
+        } 
+    }
+
+
+    //回复帖子
+    public function doMobileReplypost()
+    {
+        global $_GPC,$_W;
+        $postid = intval($_GPC['postid']);          //帖子id
+        $towho = intval($_GPC['towho']);            //回复的id
+
+        $user = getUserInfo();
+        $data = [
+            'weid'=>$_W['weid'],
+            'uid' => $user['id'],
+            'type' => 1,
+            'cid' => $postid,
+            'time' => time(),
+            'content' => $_GPC['content']
+            ];
+
+        if($towho){     //对帖子评论
+            $data['towho'] = $towho;
+        }
+
+        $ise = pdo_fetch('select 1 from '.tablename('forum_com').' where uid=:uid and cid=:cid and towho=:towho');
+        if($ise){
+            pdo_insert('forum_com',$data);
+            self::returnMsg(['msg'=>'评论成功','status'=>0]);
+        }else{
+            self::returnMsg(['msg'=>'已经评论过','status'=>1]);
+        }
+
+    }
+
+
+    //搜索
+    public function doMobileSearch()
+    {
+        global $_GPC,$_W;
+
+        $search = $_GPC['search'];
+        //搜索帖子
+        $list['post'] = pdo_fetchAll('select * from '.tablename('forum_post')." where content like '%{$search}%'",[':content'=>$search]);
+        //搜索回复
+        $list['reply'] = pdo_fetchAll('select * from '.tablename('forum_com')." where content like '%{$search}%'",[':content'=>$search]);
+        //搜索文章
+        $list['article'] = pdo_fetchAll("select id,title,pic from ".tablename('forum_article')." where title like '%{$search}%'");
+        if(empty($list)){
+            $list = ['post'=>[],'reply'=>[],'article'=>[]];
+        }
+        self::returnMsg($list);
+
+    }
+
+
+    //只看楼主
+    public function doMobileLooklz()
+    {
+        global $_GPC,$_W;
+
+
+    }
 class PostModuleSite extends WeModuleSite {
     //模块标识
     public $modulename = 'post';//模块名
@@ -313,84 +485,180 @@ class PostModuleSite extends WeModuleSite {
     }
 
 
-
-    //获取模板id  模版消息 $flag=true下订单通知 $flag=false 订单完成通知
-    public function postTmpMssage($openid,$template_id,$u,$querydata,$flag)
-    {
+    
+    //根据openid获取用户微信基本信息
+    public function user_info($openid){
         global $_W;
-//        $access_token = $_W['account']['access_token']['token'];
+        if(!isset($openid)){
+            $openid = $_W['fans']['from_user'];
+        }
         $acc = WeAccount::create($this->acid);
         $access_token = $acc->getAccessToken();
-        $url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=".$access_token;
-        load()->func('communication');
-        switch ($flag) {
-            case 1:
-                $data = array('touser'=>$openid,'template_id'=>$template_id,$u,'topcolor'=>"#FF0000",
-                    'data'=>array(
-                        'first'=>array('value'=>$querydata['first'],'color'=>"#173177"),
-                        'keyword1'=>array('value'=>$querydata['keyword1'],'color'=>"#173177"),
-                        'remark'=>array('value'=>$querydata['remark'],'color'=>"#173177"),
-                    )
-                );
-                break;
-            case 2:
-                $data = array('touser'=>$openid,'template_id'=>$template_id,'url'=>$u,'topcolor'=>"#FF0000",
-                    'data'=>array(
-                        'first'=>array('value'=>$querydata['first'],'color'=>"#173177"),
-                        'keyword1'=>array('value'=>$querydata['keyword1'],'color'=>"#173177"),
-                        'keyword2'=>array('value'=>$querydata['keyword2'],'color'=>"#173177"),
-                        'remark'=>array('value'=>$querydata['remark'],'color'=>"#173177"),
-                    )
-                );
-                break;
-            case 3:
-                $data = array('touser'=>$openid,'template_id'=>$template_id,$u,'topcolor'=>"#FF0000",
-                    'data'=>array(
-                        'first'=>array('value'=>$querydata['first'],'color'=>"#173177"),
-                        'keyword1'=>array('value'=>$querydata['keyword1'],'color'=>"#173177"),
-                        'keyword2'=>array('value'=>$querydata['keyword2'],'color'=>"#173177"),
-                        'keyword3'=>array('value'=>$querydata['keyword3'],'color'=>"#173177"),
-                        'remark'=>array('value'=>$querydata['remark'],'color'=>"#173177"),
-                    )
-                );
-                break;
-            case 4:
-                $data = array('touser'=>$openid,'template_id'=>$template_id,$u,'topcolor'=>"#FF0000",
-                    'data'=>array(
-                        'first'=>array('value'=>$querydata['first'],'color'=>"#173177"),
-                        'keyword1'=>array('value'=>$querydata['keyword1'],'color'=>"#173177"),
-                        'keyword2'=>array('value'=>$querydata['keyword2'],'color'=>"#173177"),
-                        'keyword3'=>array('value'=>$querydata['keyword3'],'color'=>"#173177"),
-                        'keyword4'=>array('value'=>$querydata['keyword4'],'color'=>"#173177"),
-                        'remark'=>array('value'=>$querydata['remark'],'color'=>"#F5031F"),
-                    )
-                );
-                break;
-            case 5:
-                $data = array('touser'=>$openid,'template_id'=>$template_id,$u,'topcolor'=>"#FF0000",
-                    'data'=>array(
-                        'first'=>array('value'=>$querydata['first'],'color'=>"#173177"),
-                        'keyword1'=>array('value'=>$querydata['keyword1'],'color'=>"#173177"),
-                        'keyword2'=>array('value'=>$querydata['keyword2'],'color'=>"#173177"),
-                        'keyword3'=>array('value'=>$querydata['keyword3'],'color'=>"#173177"),
-                        'keyword4'=>array('value'=>$querydata['keyword4'],'color'=>"#173177"),
-                        'keyword5'=>array('value'=>$querydata['keyword5'],'color'=>"#173177"),
-                        'remark'=>array('value'=>$querydata['remark'],'color'=>"#F5031F"),
-                    )
-                );
-                break;
-            default:
-                break;
-        }
-        $data = json_encode($data);
-
-        $res = http_request($url,$data);
-
-        if(!is_bool($res)){
-            return true;
-        }else{
-            return false;
+        $url = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=$access_token&openid=$openid&lang=zh_CN";
+        $output = http_request($url);
+        if($output){
+            $nickname=json_decode($output)->nickname;
+            $avatar=json_decode($output)->headimgurl;
+            return [$nickname,$avatar];
         }
     }
+
+
+
+
+
+    //返回json格式化数据
+    public static function returnMsg($responce=array())
+    {
+        echo json_encode($responce);
+    }
+
+
+    //取出用户信息
+    public function getUserInfo($openid='',$uid=0)
+    {
+        global $_GPC,$_W;
+
+        if($openid){
+            return $userinfo = pdo_fetch('select * from '.tablename('forum_user').' where openid=:openid',[':openid'=>$_W['openid']]);   
+        }else if($id){
+            return $userinfo = pdo_fetch('select * from '.tablename('forum_user').' where id=:id',[':id'=>$id]);
+        }
+        return false;
+
+    }
+
+
+    //点赞
+    public function doMobileZan()
+    {
+        global $_GPC,$_W;
+
+        $uid = getUserInfo();
+        $postid = $_GPC['postid'];
+        $type = intval($_GPC['type']);      //打赏类型  2帖子1文章
+        
+        if($type && !in_array($type, [1,2])){
+            self::returnMsg(['msg'=>'参数错误','status'=>1]);
+        }
+
+        $data = ['weid'=>$_W['weid'],'uid'=>$uid['id'],'type'=>$type,'cid'=>$postid,'time'=>time()];
+        
+        $ise = pdo_fetch('select 1 from '.tablename('forum_zan').' where uid=:uid and cid=:cid and type=:type',[':uid'=>$uid['uid'],'cid'=>$postid,':type'=>$type]);
+        if($ise){
+            pdo_insert('forum_zan',$data);
+            echo json_decode(['msg'=>'点赞成功','status'=>0]);
+        }else{
+            echo json_decode(['msg'=>'已经赞过','status'=>1]);
+        }  
+    }
+
+
+    //打赏
+    public function doMobileShang()
+    {
+        global $_GPC,$_W;
+
+        $uid = getUserInfo();
+        $postid = $_GPC['postid'];
+        $rid = intval($_GPC['rid']);
+        $score = intval($_GPC['score']);
+        $type = intval($_GPC['type']);      //打赏类型  2帖子1文章
+        if($type && !in_array($type, [1,2])){
+            self::returnMsg(['msg'=>'参数错误','status'=>1]);
+        }
+
+        if($_W['ispost'] && !empty($score) && !empty($rid)){
+            elf::returnMsg(['msg'=>'参数错误','status'=>1]);
+        }
+
+        $data = ['weid'=>$_W['weid'],'uid'=>$uid['id'],'type'=>2,'cid'=>$postid,'time'=>time()];
+        if($_GPC['rid']){       //档位
+            $data['rid'] = intval($_GPC['rid']);
+            $score = pdo_fetch('select score from '.tablename('forum_reward_set').' where id=:rid and status=0',[':rid'=>intval($_GPC['rid'])]);
+            $data['score'] = $score['score'];
+        }else{      //自定义
+            $data['score'] = $score;
+        }
+
+        //减少用户对应积分
+        $sql = 'update '.tablename('forum_user').' set score=score-:score where uid=:uid and weid=:weid';
+        pdo_query($sql,[':score'=>$score,':uid'=>$uid['id'],':weid'=>$_W['weid']]);
+        $isok = pdo_insert('forum_reward',$data);       //打赏记录
+        $rewardid = pdo_insertid();
+        if($isok){      //插入用户积分记录
+            $data = ['weid'=>$weid,'uid'=>$uid['id'],'type'=>$type,'record_id'=>$rewardid,'time'=>time()];
+            $isok = pdo_insert('forum_behavior',$rewardid);
+        }
+
+        if($isok){
+            self::returnMsg(['msg'=>'打赏成功','status'=>0]);
+        }else{
+            self::returnMsg(['msg'=>'打赏失败','status'=>1]);
+        } 
+    }
+
+
+    //回复帖子
+    public function doMobileReplypost()
+    {
+        global $_GPC,$_W;
+        $postid = intval($_GPC['postid']);          //帖子id
+        $towho = intval($_GPC['towho']);            //回复的id
+
+        $user = getUserInfo();
+        $data = [
+            'weid'=>$_W['weid'],
+            'uid' => $user['id'],
+            'type' => 1,
+            'cid' => $postid,
+            'time' => time(),
+            'content' => $_GPC['content']
+            ];
+
+        if($towho){     //对帖子评论
+            $data['towho'] = $towho;
+        }
+
+        $ise = pdo_fetch('select 1 from '.tablename('forum_com').' where uid=:uid and cid=:cid and towho=:towho');
+        if($ise){
+            pdo_insert('forum_com',$data);
+            self::returnMsg(['msg'=>'评论成功','status'=>0]);
+        }else{
+            self::returnMsg(['msg'=>'已经评论过','status'=>1]);
+        }
+
+    }
+
+
+    //搜索
+    public function doMobileSearch()
+    {
+        global $_GPC,$_W;
+
+        $search = $_GPC['search'];
+        //搜索帖子
+        $list['post'] = pdo_fetchAll('select * from '.tablename('forum_post')." where content like '%{$search}%'",[':content'=>$search]);
+        //搜索回复
+        $list['reply'] = pdo_fetchAll('select * from '.tablename('forum_com')." where content like '%{$search}%'",[':content'=>$search]);
+        //搜索文章
+        $list['article'] = pdo_fetchAll("select id,title,pic from ".tablename('forum_article')." where title like '%{$search}%'");
+        if(empty($list)){
+            $list = ['post'=>[],'reply'=>[],'article'=>[]];
+        }
+        self::returnMsg($list);
+
+    }
+
+
+    //只看楼主
+    public function doMobileLooklz()
+    {
+        global $_GPC,$_W;
+
+
+    }
+
+
 }
 

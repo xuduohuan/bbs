@@ -35,8 +35,9 @@
     <script type="text/template" charset="utf-8" id='theme_template'>
         {{for(var i=0;i<it.length;i++){ }}
             <div class="swiper-slide">
-                <div class="theme_icon bg_blue"><i class="icon icon_mobile"></i></div>{{=it[i]}}
+                <div class="theme_icon bg_blue"><i class="icon icon_mobile"></i></div><a href="/app/index.php?i=3&c=entry&do=post&m=post&topicid={{=it[i].id}}">{{=it[i].title}}</a>
             </div>
+            
         {{ } }}
     </script>
     <script type="text/template" charset="utf-8" id='list_template'>
@@ -51,12 +52,14 @@
                         <div class="font_12 _light">发表于{{=it[i].time}}&emsp;浏览 {{=it[i].click}}</div>
                     </div>
                 </div>
+                <a href="/app/index.php?i=3&c=entry&do=detail&m=post&id={{=it[i].id}}">
                 <div class="flex v_center bg_default margin_b_10">
                     <div class="media_img" style="width:200px;">
                         <img src="{{=it[i].postimg}}"/>
                     </div>
                     <div class="all_width line_ellipsis" style="height:42px;">{{=it[i].content}}</div>
                 </div>
+                </a>
                 <div class="flex h_justify font_12">
                     <div class=""><i class="iconfont icon-good-copy dark_blue"></i> 点赞：{{=it[i].zan}}</div>
                     <div class=""><i class="iconfont icon-dollar dark_blue"></i> 打赏：{{=it[i].rew}}</div>
@@ -68,7 +71,8 @@
     <script type="text/javascript">
         // 话题模版
         var evalTheme = doT.template($("#theme_template").text());
-        var theme = ["话题1","话题2","话题3","话题4","话题5","话题6","话题7","话题8","话题9","话题10"];
+        // var theme = ["话题1","话题2","话题3","话题4","话题5","话题6","话题7","话题8","话题9","话题10"];
+        var theme = {$top};     //话题
         $(".swiper-wrapper").html(evalTheme(theme));
         window.onload = function(){
             var mySwiper = new Swiper('.swiper-container', {

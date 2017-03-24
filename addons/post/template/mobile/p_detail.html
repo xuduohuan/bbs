@@ -145,9 +145,13 @@
         var evalNumber = doT.template($("#number_template").text());
         var evalDetail = doT.template($("#detail_template").text());
         var evalReply = doT.template($("#reply_template").text());
+
+        //用户帖子数据
+        var userdata={$info_json};
+       console.log(userdata);
         var post={
-            id:1,headimg:"{$_W['attachurl']}image/demo1.png",name:"迟勇军",label:"用户标签",time:"1小时",skin_num:2,
-            content:'<p>2016年依然是非常忙碌奋斗的一年，每天都在学习与进步。不过而大多数人不一样，学习的重心依然是CSS基础知识，事无巨细和深入到底两个方向，其实基本上都没什么实用价值的东西，兴趣所在而已。并没有过多关注上层建筑，一些流行事物也就看看而已；没有参加任何论坛会议之类，没有任何的社交和抛头露面，坚持分享和知识传播，无论是公司内还是对外；也几乎没有花精力在开源项目上，无论是自己的还是协助贡献。以保证有限的精力能够专注在1~2件事情上。依旧奋斗在项目一线，尽量避免面试，人员管理这些琐碎的事情，目前对当领导不感兴趣，我只是个打杂的，所以，小伙伴写邮件提问与交流的时候，不要叫我领导，我不是；也不要叫我大神，更不是。</p><img src="{$_W['attachurl']}image/img5.jpg">',
+            id:1,headimg:"{$_W['attachurl']}image/demo1.png",name:userdata.name,label:"用户标签",time:userdata.time,skin_num:userdata.click,
+            content:userdata.content,
             laud_num:2,award_num:8,conment:10,
             reply:[
                 {
@@ -165,6 +169,19 @@
                 }
             ]
         };
+
+        //回复数据
+        var com_json = {$com_json};
+
+        for (var i = com_json.length - 1; i >= 0; i--) {
+            post.reply[i].id = com_json[i].id;
+            post.reply[i].time = com_json[i].time;
+            post.reply[i].name = com_json[i].nickname;
+            post.reply[i].content = com_json[i].content;
+        };
+
+        console.log(post);
+
         $(".post_body").html(evalPost(post));
         $(".award_number").html(evalNumber(post.award_num))
         $(".good_number").html(evalNumber(post.laud_num))
