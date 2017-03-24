@@ -67,6 +67,7 @@
 					<td>{php echo date('Y-m-d H:i',$item['time'])}</td>
 					<td>
 						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('seto',array('op'=>'post', 'id'=>$item['id']))}"><i class="fa fa-edit"></i> 详情编辑</a>
+						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('seto',array('op'=>'url', 'id'=>$item['id']))}"><i class="fa fa-mail-forward"></i>链接 </a>
 						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('seto',array('op'=>'delete', 'id'=>$item['id']))}" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
 						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('seto',array('op'=>'post', 'id'=>$item['id'],'ps'=>s))}"><i class="fa fa-plus-circle"></i> 添加</a>
 					</td>
@@ -108,7 +109,7 @@
 				<div class="form-group">
 					<label class="col-md-2 col-lg-1 control-label">自定义轮播</label>
 					<div class="col-md-2 col-lg-5">
-						{php echo tpl_form_field_image('banner',$info['banner']);}
+						{php echo tpl_form_field_multi_image('banner',unserialize($info['banner']));}
 					</div>
 				</div>
 				{/if}
@@ -139,6 +140,13 @@
 
 		</div>
 	</form>
+</div>
+{elseif $op=='url'}
+<div class="form-group">
+	<label class="col-md-2 col-lg-1 control-label">页面链接</label>
+	<div class="col-md-2 col-lg-5">
+		<input type="text" class="form-control" value="{$url}" readonly>
+	</div>
 </div>
 {/if}
 

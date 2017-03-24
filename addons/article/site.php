@@ -45,7 +45,7 @@ class ArticleModuleSite extends WeModuleSite {
                         $arr[$v['id']]['del'] = $v['del'];
                         $arr[$v['id']]['sort'] = $v['sort'];
                         $arr[$v['id']]['time'] = $v['time'];
-                        $arr[$v['id']]['banner'] = $v['banner'];
+                        $arr[$v['id']]['banner'] = unserialize($v['banner'])[0];
                         $arr[$v['id']]['sons'] = pdo_fetchall('select id,title,status,time from '.tablename('forum_section').' where weid=:weid and del=:del and stype=:sty and sid=:sid ',[':weid'=>$weid,':del'=>0,':sty'=>2,':sid'=>$v['id']]);
                     }
                 }
@@ -80,8 +80,9 @@ class ArticleModuleSite extends WeModuleSite {
                         $res = pdo_update('forum_section',['title'=>trim($_GPC['title']),'status'=>$_GPC['status'],'banner'=>$_GPC['banner']],['id'=>$gpc_id]);
                         $msg='更新成功';
                     }else{
-                        $data['banner'] = $_GPC['banner'];
+                        $data['banner'] = serialize($_GPC['banner']);
                         $res = pdo_insert('forum_section',$data);
+                        $insertid = pdo_insertid();//新增成功后，生成链接
                         $msg='新增成功';
                     }
                 }
@@ -92,6 +93,9 @@ class ArticleModuleSite extends WeModuleSite {
             }elseif ((!isset($_GPC['ps']) and !empty($id)) or ($_GPC['ps'] == 'c' and !empty($id))){
                 $info = pdo_fetch('select * from '.tablename('forum_section').' where id=:id',[':id'=>$id]);
             }
+        }else if($op == 'url'){
+            $id=intval($_GPC['id']);
+            $url = $this->createMobileUrl('list',['pid'=>$id]);
         }else if($op == 'delete'){
             $id=intval($_GPC['id']);
             $res = pdo_update('forum_section',['del'=>1],['id'=>$id]);
@@ -695,6 +699,19 @@ class ArticleModuleSite extends WeModuleSite {
     }
 
 
+    //首页自定义
+    public function doWebindex()
+    {
+        global $_GPC, $_W;
+        $weid = $_W['uniacid'];
+        $op = empty($_GPC['op']) ? 'display' : $_GPC['op'];
+
+
+
+
+        include $this->template('diy');
+    }
+
 
     //首页自定义按钮管理
     public function doWebindexdiy()
@@ -758,6 +775,9 @@ class ArticleModuleSite extends WeModuleSite {
     {
         global $_GPC, $_W;
         $weid = $_W['uniacid'];
+        $op = $_GPC['op'];
+        $openid = $_W['openid'];
+        $uid = openidtoinfo($openid);
         //自定义按钮
         $diybutton = pdo_fetchall('select title,url,css from '.tablename('forum_diybutton').' where weid=:weid and sel=:sel order by sort,time',[':weid'=>$weid,':sel'=>0]);
 //        print_r($diybutton);
@@ -792,8 +812,35 @@ class ArticleModuleSite extends WeModuleSite {
             $val['zan'] = pdo_fetchcolumn('select COUNT(id) from '.tablename('forum_zan').' where weid=:weid and type=:ty and cid=:cid',[':weid'=>$weid,':ty'=>1,':cid'=>$val['id']]);
             $val['com'] = pdo_fetchcolumn('select COUNT(id) from '.tablename('forum_com').' where weid=:weid and type=:ty and cid=:cid',[':weid'=>$weid,':ty'=>1,':cid'=>$val['id']]);
         }
-
         $arc_json = json_encode($arc);
+
+        if($op == 'zan'){
+            $type = $_GPC['type'];//1是文章，2是帖子
+            $cid = $_GPC['cid'];
+            $res = pdo_insert('forum_zan',['weid'=>$weid,'uid'=>$uid,'type'=>$type,'cid'=>$cid,'time'=>TIMESTAMP]);
+            if($res){
+                message(['error'=>0],'','ajax');
+            }
+        }
+        if($op == 'com'){
+            $type = $_GPC['type'];//1是文章，2是帖子
+            $cid = $_GPC['cid'];
+            $content = $_GPC['content'];
+            $towho = $type == '2' ? $cid : 0;
+            $res = pdo_insert('forum_com',['weid'=>$weid,'uid'=>$uid,'type'=>$type,'cid'=>$cid,'content'=>$content,'towho'=>$towho,'time'=>TIMESTAMP]);
+            if($res){
+                message(['error'=>0],'','ajax');
+            }
+        }
+        if($op == 'rew'){
+            $type = $_GPC['type'];//1是文章，2是帖子
+            $cid = $_GPC['cid'];
+            $rid = $_GPC['rid'];
+            $res = pdo_insert('forum_reward',['weid'=>$weid,'uid'=>$uid,'type'=>$type,'cid'=>$cid,'rid'=>$rid,'time'=>TIMESTAMP]);
+            if($res){
+                message(['error'=>0],'','ajax');
+            }
+        }
         include $this->template('index');
     }
 
@@ -859,7 +906,7 @@ class ArticleModuleSite extends WeModuleSite {
 //        }
 
 
-
+        print_r($arr);
 
         include $this->template('list');
     }
@@ -874,6 +921,7 @@ class ArticleModuleSite extends WeModuleSite {
         if(empty($id)){//如果文章id不存在
             return false;
         }
+        pdo_query("update ims_forum_article set click = click + 1 where id = $id");
         $info = pdo_fetch('select id,sid,tid,title,`from`,content,click,time from '.tablename('forum_article').' where id=:id',[':id'=>$id]);
         if($info){
             $zan_num = pdo_fetchcolumn('select COUNT(id) from '.tablename('forum_zan').' where weid=:weid and type=:ty and cid=:cid',[':weid'=>$weid,':ty'=>1,':cid'=>$id]);

@@ -9,9 +9,9 @@
 帖子$post_json
 文章$arc_json
 
-add:自定义按钮 $diybutton_json
-add:图片 $pics_json
-222222222
+自定义按钮 $diybutton_json
+图片 $pics_json
+
 
 文章详情
 文章信息 $info_json
@@ -19,5 +19,5 @@ add:图片 $pics_json
 评论信息 $com_json
 
 帖子详情
-add:帖子信息 $info_json
-add:评论信息 $com_json
+帖子信息 $info_json  包含自定义轮播（字段'ban'是轮播的图，字段'burl'是轮播对应的跳转链接）
+评论信息 $com_json

@@ -26,6 +26,7 @@ class PostModuleSite extends WeModuleSite {
         $op = empty($_GPC['op']) ? 'display' : $_GPC['op'];
 
         if ($op=='display'){
+            $topic = pdo_fetchall('select id,title from '.tablename('forum_topic').' where weid=:weid and sel=:sel order by sort,time DESC',[':weid'=>$weid,':sel'=>0]);
             $pindex = max(1, intval($_GPC['page']));
             $psize = 10;
             $where='';
@@ -37,24 +38,78 @@ class PostModuleSite extends WeModuleSite {
                 $name = $_GPC['name'];
                 $where .= " AND u.nickname like '%{$name}%'";
             }
-            $list = pdo_fetchAll("select p.*,se.title as st,t.title as tt,u.nickname,u.avatar from ".tablename('forum_post')." p 
-            left join ".tablename('forum_section')." se on se.id = p.sid
-            left join ".tablename('forum_section')." t on t.id = p.tid
+            if (!empty($_GPC['to'])) {
+                $to = $_GPC['to'];
+                $where .= " AND p.tid =$to";
+            }
+            $list = pdo_fetchAll("select p.*,t.title as tt,u.nickname,u.avatar from ".tablename('forum_post')." p 
+            left join ".tablename('forum_topic')." t on t.id = p.tid
             left join ".tablename('forum_user')." u on u.id = p.uid
             where p.weid=:weid and p.del=:del $where order by time DESC LIMIT " . ($pindex - 1) * $psize . ',' . $psize,[':weid'=>$weid,':del'=>0]);
 
             $post_num = count($list);
 
             $total = pdo_fetchcolumn('select COUNT(p.id) from '.tablename('forum_post')." p
-            left join ".tablename('forum_section')." se on se.id = p.sid
-            left join ".tablename('forum_section')." t on t.id = p.tid
+            left join ".tablename('forum_topic')." t on t.id = p.tid
             left join ".tablename('forum_user')." u on u.id = p.uid
             where p.weid=$weid and p.del=0 $where ");
             $pager = pagination($total, $pindex, $psize);
+        }elseif ($op=='post'){
+            $id=intval($_GPC['id']);
+            $topic = pdo_fetchall('select id,title from '.tablename('forum_topic').' where weid=:weid and sel=:sel order by sort,time DESC',[':weid'=>$weid,':sel'=>0]);
+            $banner_info = pdo_fetchcolumn('select banner from '.tablename('forum_post').' where id=:id',[':id'=>$id]);
+
+            if(checksubmit('sub')){
+                $data=[
+                    'weid'=>$weid,
+                    'tid'=>$_GPC['topic'],
+                    'content'=>htmlspecialchars_decode(trim($_GPC['content'])),
+                    'banner'=>serialize($_GPC['banner']),
+                    'url'=>$_GPC['burl'],
+                    'status'=>$_GPC['status'],
+                    'time'=>TIMESTAMP
+                ];
+
+                if(!empty($id)){
+                    $res = pdo_update('forum_post',$data,['id'=>$id]);
+                    $msg='更新成功';
+                }else{
+                    $res = pdo_insert('forum_post',$data);
+                    $msg='新增成功';
+                }
+                if($res){
+                    message($msg, $this->createWebUrl('post'),'success');
+                }
+            }elseif (!empty($id)){
+                $info = pdo_fetch('select * from '.tablename('forum_post').' where id=:id',[':id'=>$id]);
+            }
+        }elseif ($op=='banner'){//自定义轮播
+            $id=intval($_GPC['id']);
+
+            if(checksubmit('sub')){
+                $num = $_GPC['num'];
+                for ($i=0;$i<$num;$i++){
+                    $bnarr[$i] = $_GPC["ban$i"];
+                    $url[$i] = $_GPC["burl$i"];
+                }
+
+                if(!empty($id)){
+                    $res = pdo_update('forum_post',['banner'=>serialize($bnarr),'url'=>serialize($url)],['id'=>$id]);
+                }
+                if($res){
+                    message('更新成功', $this->createWebUrl('post'),'success');
+                }
+            }elseif (!empty($id)){
+                $binfo = pdo_fetch('select banner,url from '.tablename('forum_post').' where id=:id',[':id'=>$id]);
+                $bn = unserialize($binfo['banner']);
+                $url = unserialize($binfo['url']);
+                foreach ($bn as $k=>&$v){
+                    $arr[$k]['ban'] = $v;
+                    $arr[$k]['url'] = $url[$k];
+                }
+                $num = count($arr);
+            }
         }
-
-
-
         include $this->template('post');
     }
 
@@ -159,11 +214,25 @@ class PostModuleSite extends WeModuleSite {
         if(empty($id)){//如果帖子id不存在
             return false;
         }
-        //自定义轮播
-        //帖子信息
-        $info = pdo_fetch('select u.nickname,u.avatar,u.v,p.time,p.click,p.content,p.pics from '.tablename('forum_post').' p
+        pdo_query("update ims_forum_post set click = click + 1 where id = $id");
+        //帖子信息(包括自定义轮播)
+        $info = pdo_fetch('select u.nickname,u.avatar,u.v,p.time,p.click,p.content,p.pics,p.banner,p.url from '.tablename('forum_post').' p
         left join '.tablename('forum_user').' u on u.id = p.uid
         where p.id=:id',[':id'=>$id]);
+
+        if($info['banner']){
+            $bn =  unserialize($info['banner']);
+            $url =  unserialize($info['url']);
+            foreach ($bn as $k=>$v){
+                if(empty($v)){
+                    unset($info['ban'][$k]);
+                    continue;
+                }
+                $info['ban'][$k] = $v;
+                $info['burl'][$k] = $url[$k];
+            }
+            unset($info['banner'],$info['url']);
+        }
 
         $zan = pdo_fetchall('select u.avatar from '.tablename('forum_zan').' z
         left join '.tablename('forum_user').' u on u.id = z.uid
@@ -182,7 +251,7 @@ class PostModuleSite extends WeModuleSite {
         }
         $info_json = json_encode($info);
         //评论
-        $comment = pdo_fetchall('select c.id,c.lon,c.towho,c.lz,c.content,c.time,u.nickname,u.avatar,u.v from '.tablename('forum_com').' c 
+        $comment = pdo_fetchall('select c.id,c.towho,c.lz,c.content,c.time,u.nickname,u.avatar,u.v from '.tablename('forum_com').' c 
         left join '.tablename('forum_user').' u on u.id = c.uid
         where c.weid=:weid and c.type=:ty and c.cid=:cid and towho=:tw order by time DESC',[':weid'=>$weid,':ty'=>2,':cid'=>$id,':tw'=>0]);
         foreach ($comment as $k=>$v){

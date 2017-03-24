@@ -1,0 +1,98 @@
+2016-01-15 16:29:39 trace :
+------------
+String:
+<xml><ToUserName><![CDATA[gh_a60f58a2d8a9]]></ToUserName>
+<FromUserName><![CDATA[oTVoyuFnbRAtbHh81dBoGQHLCcEI]]></FromUserName>
+<CreateTime>1452846524</CreateTime>
+<MsgType><![CDATA[text]]></MsgType>
+<Content><![CDATA[wjb]]></Content>
+<MsgId>6239928307090045000</MsgId>
+</xml>
+
+2016-01-15 16:29:39 params :
+------------
+Array:
+message : Array ;
+module : wjb ;
+rule : 9 ;
+priority : 0 ;
+keyword : Array ;
+
+2016-01-15 16:29:39 response :
+------------
+Array:
+FromUserName : gh_a60f58a2d8a9 ;
+ToUserName : oTVoyuFnbRAtbHh81dBoGQHLCcEI ;
+MsgType : news ;
+ArticleCount : 1 ;
+Articles : Array ;
+
+2016-01-15 16:31:32 trace :
+------------
+String:
+<xml><ToUserName><![CDATA[toUser]]></ToUserName><FromUserName><![CDATA[fromUser]]></FromUserName><CreateTime>1452846704</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[外教帮]]></Content><MsgId>1234567890123456</MsgId></xml>
+
+2016-01-15 16:31:32 params :
+------------
+Array:
+message : Array ;
+module : wjb ;
+rule : 10 ;
+priority : 0 ;
+keyword : Array ;
+
+2016-01-15 16:31:32 response :
+------------
+Array:
+FromUserName : toUser ;
+ToUserName : fromUser ;
+MsgType : news ;
+ArticleCount : 1 ;
+Articles : Array ;
+
+2016-01-15 16:54:07 trace :
+------------
+String:
+<xml><ToUserName><![CDATA[toUser]]></ToUserName><FromUserName><![CDATA[fromUser]]></FromUserName><CreateTime>1452848047</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[wjb]]></Content><MsgId>1234567890123456</MsgId></xml>
+
+2016-01-15 16:54:07 params :
+------------
+Array:
+message : Array ;
+module : wjb ;
+rule : 9 ;
+priority : 0 ;
+keyword : Array ;
+
+2016-01-15 16:54:07 response :
+------------
+Array:
+FromUserName : toUser ;
+ToUserName : fromUser ;
+MsgType : news ;
+ArticleCount : 1 ;
+Articles : Array ;
+
+2016-01-15 16:54:08 trace :
+------------
+String:
+<xml><ToUserName><![CDATA[toUser]]></ToUserName><FromUserName><![CDATA[fromUser]]></FromUserName><CreateTime>1452848048</CreateTime><MsgType><![CDATA[text]]></MsgType><Content><![CDATA[wjb]]></Content><MsgId>1234567890123456</MsgId></xml>
+
+2016-01-15 16:54:08 params :
+------------
+Array:
+message : Array ;
+module : wjb ;
+rule : 9 ;
+priority : 0 ;
+keyword : Array ;
+
+2016-01-15 16:54:08 response :
+------------
+Array:
+FromUserName : toUser ;
+ToUserName : fromUser ;
+MsgType : news ;
+ArticleCount : 1 ;
+Articles : Array ;
+

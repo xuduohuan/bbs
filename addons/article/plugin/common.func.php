@@ -118,17 +118,17 @@
         return $year_d;
     }
 
-    //openid转成vip表id
-    function openidtoid($openid)
+    //openid to userinfo  默认取出userid(uid)
+    function openidtoinfo($openid,$type = 'id')
     {
         global $_W;
         $weid = $_W['uniacid'];
         if(!isset($openid)){
             return false;
         }
-        $user=pdo_fetch('select id from '.tablename('lth_vip').' where weid=:weid and openid=:oid',array(':weid'=>$weid,':oid'=>$openid));
+        $user=pdo_fetch('select '.$type.' from '.tablename('forum_user').' where weid=:weid and openid=:oid',array(':weid'=>$weid,':oid'=>$openid));
         if($user){
-            return $user['id'];
+            return $user[$type];
         }else{
             return false;
         }
