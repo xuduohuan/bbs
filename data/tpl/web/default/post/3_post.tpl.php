@@ -1,7 +1,9 @@
 <?php defined('IN_IA') or exit('Access Denied');?><?php (!empty($this) && $this instanceof WeModuleSite || 1) ? (include $this->template('common/header', TEMPLATE_INCLUDEPATH)) : (include template('common/header', TEMPLATE_INCLUDEPATH));?>
 <ul class="nav nav-tabs">
 	<li  <?php  if($op == 'display') { ?>class="active"<?php  } ?>><a href="<?php  echo $this->createWebUrl('post', array('op' => 'display'))?>">管理</a></li>
-	<li  <?php  if($op == 'post') { ?>class="active"<?php  } ?>><a href="<?php  echo $this->createWebUrl('post', array('op' => 'post'))?>">添加</a></li>
+	<?php  if($op == 'banner') { ?>
+	<li  <?php  if($op == 'post') { ?>class="active"<?php  } ?>><a href="<?php  echo $this->createWebUrl('post', array('op' => 'banner','oop'=>'add','id'=>$id))?>">添加轮播</a></li>
+	<?php  } ?>
 </ul>
 <?php  if($op=='display') { ?>
 <div class="panel panel-info">
@@ -119,34 +121,72 @@
 	</form>
 </div>
 <?php  } else if($op=='banner') { ?>
+<?php  if($oop == 'display') { ?>
 <div class="main">
-	<form action="<?php  echo $this->createWebUrl('post',array('op'=>'banner'))?>" class="form-horizontal" method="post" enctype="multipart/form-data" >
+	<div class="clear" style="margin-bottom:10px;"></div>
+	<div class="panel panel-default">
+		<div class="panel-heading">轮播列表</div>
+		<div class="panel-body table-responsive">
+			<table class="table table-hover">
+				<tbirthdayad class="navbar-inner">
+					<tr>
+						<th style="width:5px;">序号</th>
+						<th style="width:30px;">帖子内容</th>
+						<th style="width:10px;">图片</th>
+						<th style="width:50px;">链接</th>
+						<th style="width:20px;">添加时间</th>
+						<th style="width:30px;">操作</th>
+					</tr>
+				</tbirthdayad>
+				<tbody>
+				<?php  if(is_array($blist)) { foreach($blist as $k => $item) { ?>
+				<tr>
+					<td><?php  echo $k+1?></td>
+					<td><?php  echo $item['content'];?></td>
+					<td><img src="<?php  echo $_W['attachurl'];?><?php  echo $item['pic'];?>" width="60px"></td>
+					<td><?php  echo $item['url'];?></td>
+					<td><?php  echo date('Y-m-d H:i',$item['time'])?></td>
+					<td>
+						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('post',array('op'=>'banner','oop'=>'add', 'id'=>$id, 'bannerid'=>$item['id']))?>"><i class="fa fa-edit"></i> 详情编辑</a>
+						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('post',array('op'=>'banner','oop'=>'del', 'id'=>$id, 'bannerid'=>$item['id']))?>" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
+					</td>
+				</tr>
+				<?php  } } ?>
+				</tbody>
+				<input name="token" type="hidden" value="<?php  echo $_W['token'];?>" />
+			</table>
+		</div>
+	</div>
+	<?php  echo $pager;?>
+</div>
+<?php  } else if($oop=='add') { ?>
+<div class="main">
+	<form action="<?php  echo $this->createWebUrl('post',array('op'=>'banner','oop'=>'add'))?>" class="form-horizontal" method="post" enctype="multipart/form-data" >
 		<div class="panel panel-default">
 			<div class="panel-body">
-				<?php  if(is_array($arr)) { foreach($arr as $k => $row) { ?>
 				<div class="form-group">
-					<label class="col-md-2 col-lg-1 control-label">自定义轮播<?php  echo $k+1?></label>
+					<label class="col-md-2 col-lg-1 control-label">自定义轮播</label>
 					<div class="col-md-2 col-lg-3">
-						<?php  echo tpl_form_field_image("ban$k",$row['ban']);?>
+						<?php  echo tpl_form_field_image("pic",$b_info['pic']);?>
 					</div>
 				</div>
 				<div class="form-group">
-					<label class="col-md-2 col-lg-1 control-label">轮播<?php  echo $k+1?>对应链接</label>
+					<label class="col-md-2 col-lg-1 control-label">轮播对应链接</label>
 					<div class="col-md-2 col-lg-4">
-						<input type="text" name="burl<?php  echo $k;?>" id="burl"  class="form-control" value="<?php  echo $row['url'];?>">
+						<input type="text" name="url" id="url"  class="form-control" value="<?php  echo $b_info['url'];?>">
 					</div>
 				</div>
-				<?php  } } ?>
 				<div class='form-group text-center'>
 					<input class="btn btn-primary" type="submit" name="sub">
 					<input type="hidden" name="id" value="<?php  echo $id;?>" />
-					<input type="hidden" name="num" value="<?php  echo $num;?>" />
+					<input type="hidden" name="bannerid" value="<?php  echo $bannerid;?>" />
 					<input type="hidden" name="token" value="<?php  echo $_W['token'];?>" />
 				</div>
 			</div>
 		</div>
 	</form>
 </div>
+<?php  } ?>
 <?php  } else if($op=='see') { ?>
 <div class="main">
 	<div class="panel panel-info">
