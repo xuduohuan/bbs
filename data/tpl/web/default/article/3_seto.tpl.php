@@ -1,6 +1,9 @@
 <?php defined('IN_IA') or exit('Access Denied');?><?php (!empty($this) && $this instanceof WeModuleSite || 1) ? (include $this->template('common/header', TEMPLATE_INCLUDEPATH)) : (include template('common/header', TEMPLATE_INCLUDEPATH));?>
 <ul class="nav nav-tabs">
 	<li  <?php  if($op == 'display') { ?>class="active"<?php  } ?>><a href="<?php  echo $this->createWebUrl('seto', array('op' => 'display'))?>">管理</a></li>
+	<?php  if($op == 'banner') { ?>
+	<li  <?php  if($op == 'post') { ?>class="active"<?php  } ?>><a href="<?php  echo $this->createWebUrl('post', array('op' => 'banner','oop'=>'add','id'=>$id))?>">添加轮播</a></li>
+	<?php  } else { ?>
 	<li  <?php  if($op == 'post') { ?>class="active"<?php  } ?>>
 	<?php  if($_GPC['ps'] == 's') { ?>
 	<a href="<?php  echo $this->createWebUrl('seto', array('op' => 'post','id'=>$id, 'ps'=>'s'))?>">添加栏目（子级）</a>
@@ -11,6 +14,7 @@
 	<a href="<?php  echo $this->createWebUrl('seto', array('op' => 'post'))?>">添加页面（父级）</a>
 	<?php  } else { ?>
 	<a href="<?php  echo $this->createWebUrl('seto', array('op' => 'post','id'=>$id))?>">编辑页面（父级）</a>
+	<?php  } ?>
 	<?php  } ?>
 	<?php  } ?>
 	</li>
@@ -66,8 +70,9 @@
 					<td><?php  if($item['status'] =='0') { ?>显示<?php  } else { ?>不显示<?php  } ?></td>
 					<td><?php  echo date('Y-m-d H:i',$item['time'])?></td>
 					<td>
-						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('seto',array('op'=>'post', 'id'=>$item['id']))?>"><i class="fa fa-edit"></i> 详情编辑</a>
+						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('seto',array('op'=>'post', 'id'=>$item['id']))?>"><i class="fa fa-edit"></i> 编辑</a>
 						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('seto',array('op'=>'url', 'id'=>$item['id']))?>"><i class="fa fa-mail-forward"></i>链接 </a>
+						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('seto',array('op'=>'banner', 'id'=>$item['id']))?>"><i class="fa fa-plus-circle"></i> 自定义轮播</a>
 						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('seto',array('op'=>'delete', 'id'=>$item['id']))?>" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
 						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('seto',array('op'=>'post', 'id'=>$item['id'],'ps'=>s))?>"><i class="fa fa-plus-circle"></i> 添加</a>
 					</td>
@@ -105,14 +110,6 @@
 						<input type="text" name="title" id="title"  class="form-control" value="<?php  echo $info['title'];?>">
 					</div>
 				</div>
-				<?php  if(!isset($_GPC['ps'])) { ?>
-				<div class="form-group">
-					<label class="col-md-2 col-lg-1 control-label">自定义轮播</label>
-					<div class="col-md-2 col-lg-5">
-						<?php  echo tpl_form_field_multi_image('banner',unserialize($info['banner']));?>
-					</div>
-				</div>
-				<?php  } ?>
 				<div class="form-group">
 					<label class="col-md-2 col-lg-1 control-label">是否显示</label>
 					<div class="col-md-2 col-lg-1">
@@ -141,6 +138,73 @@
 		</div>
 	</form>
 </div>
+<?php  } else if($op=='banner') { ?>
+<?php  if($oop == 'display') { ?>
+<div class="main">
+	<div class="clear" style="margin-bottom:10px;"></div>
+	<div class="panel panel-default">
+		<div class="panel-heading">轮播列表</div>
+		<div class="panel-body table-responsive">
+			<table class="table table-hover">
+				<tbirthdayad class="navbar-inner">
+					<tr>
+						<th style="width:5px;">序号</th>
+						<th style="width:30px;">帖子内容</th>
+						<th style="width:10px;">图片</th>
+						<th style="width:50px;">链接</th>
+						<th style="width:20px;">添加时间</th>
+						<th style="width:30px;">操作</th>
+					</tr>
+				</tbirthdayad>
+				<tbody>
+				<?php  if(is_array($blist)) { foreach($blist as $k => $item) { ?>
+				<tr>
+					<td><?php  echo $k+1?></td>
+					<td><?php  echo $item['content'];?></td>
+					<td><img src="<?php  echo $_W['attachurl'];?><?php  echo $item['pic'];?>" width="60px"></td>
+					<td><?php  echo $item['url'];?></td>
+					<td><?php  echo date('Y-m-d H:i',$item['time'])?></td>
+					<td>
+						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('post',array('op'=>'banner','oop'=>'add', 'id'=>$id, 'bannerid'=>$item['id']))?>"><i class="fa fa-edit"></i> 详情编辑</a>
+						<a class="btn btn-default btn-sm" href="<?php  echo $this->createWebUrl('post',array('op'=>'banner','oop'=>'del', 'id'=>$id, 'bannerid'=>$item['id']))?>" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
+					</td>
+				</tr>
+				<?php  } } ?>
+				</tbody>
+				<input name="token" type="hidden" value="<?php  echo $_W['token'];?>" />
+			</table>
+		</div>
+	</div>
+	<?php  echo $pager;?>
+</div>
+<?php  } else if($oop=='add') { ?>
+<div class="main">
+	<form action="<?php  echo $this->createWebUrl('post',array('op'=>'banner','oop'=>'add'))?>" class="form-horizontal" method="post" enctype="multipart/form-data" >
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<div class="form-group">
+					<label class="col-md-2 col-lg-1 control-label">自定义轮播</label>
+					<div class="col-md-2 col-lg-3">
+						<?php  echo tpl_form_field_image("pic",$b_info['pic']);?>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-md-2 col-lg-1 control-label">轮播对应链接</label>
+					<div class="col-md-2 col-lg-4">
+						<input type="text" name="url" id="url"  class="form-control" value="<?php  echo $b_info['url'];?>">
+					</div>
+				</div>
+				<div class='form-group text-center'>
+					<input class="btn btn-primary" type="submit" name="sub">
+					<input type="hidden" name="id" value="<?php  echo $id;?>" />
+					<input type="hidden" name="bannerid" value="<?php  echo $bannerid;?>" />
+					<input type="hidden" name="token" value="<?php  echo $_W['token'];?>" />
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+<?php  } ?>
 <?php  } else if($op=='url') { ?>
 <div class="form-group">
 	<label class="col-md-2 col-lg-1 control-label">页面链接</label>
