@@ -1,17 +1,17 @@
 备注：如果有图片，在图片变量前加上{$_W['attachurl']}
 
- 
+
 文章列表页
 变量名：$arr_json
 
-首页
+首页迟到
 公告$notice_json
 帖子$post_json
 文章$arc_json
 
-自定义按钮 $diybutton_json
-图片 $pics_json
-
+add:自定义按钮 $diybutton_json
+add:图片 $pics_json
+11111111
 
 文章详情
 文章信息 $info_json
@@ -19,5 +19,107 @@
 评论信息 $com_json
 
 帖子详情
-帖子信息 $info_json  包含自定义轮播（字段'ban'是轮播的图，字段'burl'是轮播对应的跳转链接）
-评论信息 $com_json
+add:帖子信息 $info_json
+add:评论信息 $com_json
+
+
+
+
+接口相关
+
+	搜索api
+		url:
+		/app/index.php?i=3&c=entry&do=search&m=post&search=关键字（例如钢）
+		返回值:
+		{
+		  "post": [
+		    {
+		      "id": "1",
+		      "weid": "3",
+		      "tid": "15",
+		      "uid": "2",
+		      "content": "钢下雨天不错",
+		      "pics": null,
+		      "video": null,
+		      "status": "0",
+		      "del": "0",
+		      "time": "1489470567",
+		      "click": "0"
+		    }
+		  ],
+		  "reply": [
+		    {
+		      "id": "12",
+		      "weid": "3",
+		      "uid": "4",
+		      "type": "2",
+		      "lz": "0",
+		      "cid": "1",
+		      "time": "1489806090",
+		      "content": "钢可以",
+		      "tip": "评",
+		      "towho": "0",
+		      "lon": "0"
+		    },
+		    {
+		      "id": "13",
+		      "weid": "3",
+		      "uid": "1",
+		      "type": "2",
+		      "lz": "0",
+		      "cid": "1",
+		      "time": "1489806090",
+		      "content": "钢有先见之明，我没带",
+		      "tip": "评",
+		      "towho": "2",
+		      "lon": "2"
+		    }
+		  ],
+		  "article": [
+		    {
+		      "id": "1",
+		      "title": "钢铁是怎样炼成的",
+		      "pic": "images/3/2017/03/A88mdjDXWDdB3NXhd82W14bO2vddND.jpg"
+		    }
+		  ]
+		}
+
+
+	点赞api:
+		url：
+			/app/index.php?i=3&c=entry&do=zan&m=post&type=1    备注：论坛打赏type=2 文章打赏type=1
+		方式
+			post
+		提交数据
+			postid 帖子id，
+		返回值：
+			msg：提示文字
+			status:0 表示成功 1，表示失败
+
+	打赏api:
+		url:
+			/app/index.php?i=3&c=entry&do=shang&m=post&type=1    备注：论坛打赏type=2 文章打赏type=1
+		方式
+			post
+		提交数据：
+			postid：帖子id
+			rid: 选择的分值档位编号
+			score: 自定义的分值
+		返回数据
+			msg：提示文字
+			status:0 表示成功 1，表示失败
+
+	评论api
+		url:
+			/app/index.php?i=3&c=entry&do=replypost&m=post
+		方式：
+			post
+		提交数据
+			postid：帖子id
+			towho： 评论帖子的评论id  (只有回复评论的时候有)
+		返回值：
+			msg：提示文字
+			status:0 表示成功 1，表示失败
+
+
+
