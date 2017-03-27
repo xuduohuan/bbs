@@ -100,21 +100,20 @@ class ArticleModuleSite extends WeModuleSite {
             if($oop == 'display'){
                 $pindex = max(1, intval($_GPC['page']));
                 $psize = 10;
-                $blist = pdo_fetchall('select b.*,p.content from '.tablename('forum_banner').' b left join '.tablename('forum_post').' p on p.id = b.cid where b.weid=:weid and b.type=:ty',[':weid'=>$weid,':ty'=>1]);
-                $total = pdo_fetchcolumn('select COUNT(b.id) from '.tablename('forum_banner')." b left join ".tablename('forum_post')." p on p.id = b.cid where b.weid=$weid and b.type=1");
+                $blist = pdo_fetchall('select b.*,p.title from '.tablename('forum_banner').' b left join '.tablename('forum_section').' p on p.id = b.cid where b.weid=:weid and b.type=:ty',[':weid'=>$weid,':ty'=>1]);
+                $total = pdo_fetchcolumn('select COUNT(b.id) from '.tablename('forum_banner')." b left join ".tablename('forum_section')." p on p.id = b.cid where b.weid=$weid and b.type=1");
                 $pager = pagination($total, $pindex, $psize);
             }elseif ($oop == 'add'){
                 $bannerid = intval($_GPC['bannerid']);
                 if(checksubmit('sub')){
                     $banner_data = [
                         'weid'=>$weid,
-                        'type'=>2,
+                        'type'=>1,//1文章，2帖子
                         'cid'=>$id,
                         'pic'=>$_GPC['pic'],
                         'url'=>trim($_GPC['url']),
                         'time'=>TIMESTAMP
                     ];
-
                     if(!empty($bannerid)){
                         $res = pdo_update('forum_banner',$banner_data,['id'=>$bannerid]);
                         $msg = '更新成功';
@@ -123,7 +122,7 @@ class ArticleModuleSite extends WeModuleSite {
                         $msg = '新增成功';
                     }
                     if($res){
-                        message($msg, $this->createWebUrl('post',['op'=>'banner','id'=>$id]),'success');
+                        message($msg, $this->createWebUrl('seto',['op'=>'banner','id'=>$id]),'success');
                     }
                 }elseif (!empty($bannerid)){
                     $b_info = pdo_fetch('select * from '.tablename('forum_banner').' where id=:id',[':id'=>$bannerid]);
@@ -132,7 +131,7 @@ class ArticleModuleSite extends WeModuleSite {
                 $bannerid = intval($_GPC['bannerid']);
                 $res = pdo_delete('forum_banner',['id'=>$bannerid]);
                 if($res){
-                    message('删除成功', $this->createWebUrl('post',['op'=>'banner','id'=>$id]),'success');
+                    message('删除成功', $this->createWebUrl('seto',['op'=>'banner','id'=>$id]),'success');
                 }
             }
         }else if($op == 'url'){
@@ -905,60 +904,25 @@ class ArticleModuleSite extends WeModuleSite {
     {
         global $_GPC, $_W;
         $weid = $_W['uniacid'];
-        $sid = $_GPC['sid'];
-        $ss = pdo_fetch('select banner,burl from '.tablename('forum_section').' where id=:id',[':id'=>$sid]);
-        print_r(unserialize($ss['banner']));
-        $list = pdo_fetchall("select s.title as tt,a.tid,a.title,DATE_FORMAT(FROM_UNIXTIME(a.time),'%Y-%m-%d') as time,a.click,a.pic from ".tablename('forum_article').' a 
-        left join '.tablename('forum_section').' s on s.id = a.tid
-        where a.weid=:weid and a.del=:del and a.status=:sta and a.sid=:sid order by a.click DESC,a.sort limit 4',[':weid'=>$weid,':del'=>0,':sta'=>0,':sid'=>$sid]);
-        foreach ($list as $k=>$v){
-            $arr[$v['tid']]['type'] = $v['tt'];
-            $arr[$v['tid']]['content'][] = $v['title'];
-            $arr[$v['tid']]['time'][] = $v['time'];
+        $sid = intval($_GPC['sid']);
+        if(empty($sid)){
+            return false;
         }
-print_r($arr);
-//        $seto = pdo_fetchall('select * from '.tablename('forum_section').' where weid=:weid and del=:del and status=:sta',[':weid'=>$weid,':del'=>0,':sta'=>0]);
-//        foreach ($seto as $v){
-//            if($v['stype'] == 1){
-//                $arr[$v['id']]['sons'] = pdo_fetchall('select id,title from '.tablename('forum_section').' where weid=:weid and del=:del and status=:sta and stype=:sty and sid=:sid order by sort',[':weid'=>$weid,':del'=>0,':sta'=>0,':sty'=>2,':sid'=>$v['id']]);
-//                if(empty($arr[$v['id']]['sons'])){
-//                    unset($arr[$v['id']]);//如果页面（父级）下面没有栏目（子级）
-//                    continue;//跳出本次循环
-//                }else{//遍历每个栏目，然后把对应页面栏目的文章取出
-//                    foreach ($arr[$v['id']]['sons'] as $key=>$val){
-//                        $corra = pdo_fetchall("select title,DATE_FORMAT(FROM_UNIXTIME(time),'%Y-%m-%d') as time,click,pic from ".tablename('forum_article').' where weid=:weid and del=:del and status=:sta and sid=:sid and tid=:tid order by click DESC,sort limit 4',[':weid'=>$weid,':del'=>0,':sta'=>0,':sid'=>$v['id'],':tid'=>$val['id']]);
-//                        if($corra){
-//                            $arr[$v['id']]['sons'][$key]['ac'] = $corra;
-//                        }
-//                    }
-//                }
-//                $arr[$v['id']]['id'] = $v['id'];
-//                $arr[$v['id']]['title'] = $v['title'];
-//                $arr[$v['id']]['banner'] = $v['banner'];
-//            }
-//        }
 
-//        print_r($arr);
-        $arr_json = json_encode($arr);
-//        $list = pdo_fetchall("select a.title,se.title as st,to.title as tt,DATE_FORMAT(FROM_UNIXTIME(a.time),'%Y-%m-%d') as time,a.pic from ".tablename('forum_article').' a
-//        left join '.tablename('forum_section').' se on se.id = a.sid
-//        left join '.tablename('forum_section').' `to` on to.id = a.tid
-//        where a.weid=:weid and a.del=:del and a.status=:sta and se.del=:del and to.del=:del order by a.sort,a.click DESC,a.time DESC',[':weid'=>$weid,':del'=>0,':sta'=>0]);
-//        if($list){
-//            foreach ($list as $v){
-////                Array
-////                (
-////                    [title] => 钢铁是怎样炼成的
-////                    [st] => 页面1
-////                [tt] => 栏目一
-////                [time] => 2017-03-18
-////    [pic] => images/3/2017/03/A88mdjDXWDdB3NXhd82W14bO2vddND.jpg
-////)
-//            }
-//        }
+        $banner = pdo_fetchall('select pic,url from '.tablename('forum_banner').' where weid=:weid and type=:ty and cid=:cid',[':weid'=>$weid,':ty'=>1,':cid'=>$sid]);
+        $to = pdo_fetchall('select id,title from '.tablename('forum_section').' where weid=:weid and del=:del and status=:sta and stype=:sty and sid=:sid order by sort,time',[':weid'=>$weid,':del'=>0,':sta'=>0,':sty'=>2,':sid'=>$sid]);
+        $part1['banner'] = $banner;
+        $part1['type'] = $to;
+        $part1_json = json_encode($part1);
+        $tid = isset($_GPC['tid']) ? intval($_GPC['tid']) : $to[0]['id']; //如有分类id,则GPC，如没有，默认取某页面下分类的第一个
 
+        $list = pdo_fetchall("select a.id,a.title,DATE_FORMAT(FROM_UNIXTIME(a.time),'%Y-%m-%d') as time,a.click,a.pic from ".tablename('forum_article').' a 
+        where a.weid=:weid and a.del=:del and a.status=:sta and a.sid=:sid and a.tid=:tid',[':weid'=>$weid,':del'=>0,':sta'=>0,':sid'=>$sid,':tid'=>$tid]);
 
-//        print_r($arr);
+        foreach ($list as &$v){
+            $v['com_num'] = pdo_fetchcolumn('select COUNT(id) from '.tablename('forum_com').' where weid=:weid and type=:ty and cid=:cid',[':weid'=>$weid,':ty'=>1,':cid'=>$v['id']]);
+        }
+        $list_json = json_encode($list);
 
         include $this->template('list');
     }

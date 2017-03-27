@@ -2,7 +2,7 @@
 <ul class="nav nav-tabs">
 	<li  {if $op == 'display'}class="active"{/if}><a href="{php echo $this->createWebUrl('seto', array('op' => 'display'))}">管理</a></li>
 	{if $op == 'banner'}
-	<li  {if $op == 'post'}class="active"{/if}><a href="{php echo $this->createWebUrl('post', array('op' => 'banner','oop'=>'add','id'=>$id))}">添加轮播</a></li>
+	<li  {if $op == 'post'}class="active"{/if}><a href="{php echo $this->createWebUrl('seto', array('op' => 'banner','oop'=>'add','id'=>$id))}">添加轮播</a></li>
 	{else}
 	<li  {if $op == 'post'}class="active"{/if}>
 	{if $_GPC['ps'] == 's'}
@@ -52,7 +52,6 @@
 					<tr>
 						<th style="width:10px;">序号</th>
 						<th style="width:20px;">标题</th>
-						<th style="width:20px;">自定义轮播</th>
 						<th style="width:20px;">分类</th>
 						<th style="width:20px;">是否显示</th>
 						<th style="width:30px;">创建时间</th>
@@ -65,7 +64,6 @@
 				<tr style="background-color: #a6e1ec">
 					<td>{$item['id']}</td>
 					<td>{$item['title']}</td>
-					<td>{if $item['banner']}<img src="{$_W['attachurl']}{$item['banner']}" width="60px">{/if}</td>
 					<td>页面（父级）</td>
 					<td>{if $item['status'] =='0'}显示{else}不显示{/if}</td>
 					<td>{php echo date('Y-m-d H:i',$item['time'])}</td>
@@ -81,7 +79,6 @@
 				<tr>
 					<td>{php echo $k+1}</td>
 					<td>{$row['title']}</td>
-					<td></td>
 					<td>栏目</td>
 					<td>{if $row['status'] =='0'}显示{else}不显示{/if}</td>
 					<td>{php echo date('Y-m-d H:i',$row['time'])}</td>
@@ -149,7 +146,7 @@
 				<tbirthdayad class="navbar-inner">
 					<tr>
 						<th style="width:5px;">序号</th>
-						<th style="width:30px;">帖子内容</th>
+						<th style="width:30px;">页面标题</th>
 						<th style="width:10px;">图片</th>
 						<th style="width:50px;">链接</th>
 						<th style="width:20px;">添加时间</th>
@@ -160,13 +157,13 @@
 				{loop $blist $k $item}
 				<tr>
 					<td>{php echo $k+1}</td>
-					<td>{$item['content']}</td>
+					<td>{$item['title']}</td>
 					<td><img src="{$_W['attachurl']}{$item['pic']}" width="60px"></td>
 					<td>{$item['url']}</td>
 					<td>{php echo date('Y-m-d H:i',$item['time'])}</td>
 					<td>
-						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('post',array('op'=>'banner','oop'=>'add', 'id'=>$id, 'bannerid'=>$item['id']))}"><i class="fa fa-edit"></i> 详情编辑</a>
-						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('post',array('op'=>'banner','oop'=>'del', 'id'=>$id, 'bannerid'=>$item['id']))}" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
+						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('seto',array('op'=>'banner','oop'=>'add', 'id'=>$id, 'bannerid'=>$item['id']))}"><i class="fa fa-edit"></i> 详情编辑</a>
+						<a class="btn btn-default btn-sm" href="{php echo $this->createWebUrl('seto',array('op'=>'banner','oop'=>'del', 'id'=>$id, 'bannerid'=>$item['id']))}" onclick="return confirm('您确定要删除吗?');return false;"><i class="fa fa-times"></i>删除</a>
 					</td>
 				</tr>
 				{/loop}
@@ -179,7 +176,7 @@
 </div>
 {elseif $oop=='add'}
 <div class="main">
-	<form action="{php echo $this->createWebUrl('post',array('op'=>'banner','oop'=>'add'))}" class="form-horizontal" method="post" enctype="multipart/form-data" >
+	<form action="{php echo $this->createWebUrl('seto',array('op'=>'banner','oop'=>'add'))}" class="form-horizontal" method="post" enctype="multipart/form-data" >
 		<div class="panel panel-default">
 			<div class="panel-body">
 				<div class="form-group">

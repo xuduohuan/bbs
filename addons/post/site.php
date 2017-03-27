@@ -1,5 +1,7 @@
 <?php
 
+include 'plugin/common.func.php';
+
 class PostModuleSite extends WeModuleSite {
     //模块标识
     public $modulename = 'post';//模块名
@@ -216,6 +218,18 @@ class PostModuleSite extends WeModuleSite {
         }
         $list_json = json_encode($list);
         include $this->template('list');
+    }
+
+
+    //发帖
+    public function doMobileposting()
+    {
+        global $_W, $_GPC;
+        $weid = $_W['uniacid'];
+
+
+
+        include $this->template('posting');
     }
 
     //帖子详情
